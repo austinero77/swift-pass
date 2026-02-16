@@ -1,0 +1,8 @@
+
+{
+  "name": "SwiftPass Ticketing System",
+  "description": "A professional, mobile-responsive ticketing and registration system with real-time verification, QR code generation, and PDF export capabilities.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
