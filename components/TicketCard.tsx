@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react'; // QRCodeSVG,
 import { Participant, TicketType } from '../types';
 import { Button } from './ui/Button';
 import { Download, CheckCircle2, MapPin, Calendar, Clock, ReceiptText, Copy, Check } from 'lucide-react';
@@ -119,8 +119,10 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
 
         {/* Bottom Stub */}
         <div className="p-8 pt-10 space-y-6">
-          <div className="flex justify-center p-6 bg-white rounded-3xl shadow-xl transform hover:scale-105 transition-transform duration-300">
-            <QRCodeSVG
+          {/* <div className="flex justify-center p-6 bg-white rounded-3xl shadow-xl transform hover:scale-105 transition-transform duration-300"> */}
+          <div className="flex justify-center p-6 bg-white rounded-3xl shadow-xl md:hover:scale-105 transition-transform duration-300">
+
+            <QRCodeCanvas
               value={verificationUrl}
               size={150}
               includeMargin={false}
