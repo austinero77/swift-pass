@@ -4,6 +4,7 @@ import { TicketType, Participant } from '../types';
 import { Button } from './ui/Button';
 import { storageService } from '../services/storageService';
 import { UserPlus, Calculator, Tag, Users } from 'lucide-react';
+import { Toaster } from 'sonner';
 
 export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }> = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -24,25 +25,58 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
     setTotal(Math.max(0, base - discountToApply));
   }, [formData]);
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+  //   const newParticipant: Participant = {
+  //     id: crypto.randomUUID(),
+  //     ...formData,
+  //     firstName: formData.firstName.toUpperCase(),
+  //     lastName: formData.lastName.toUpperCase(),
+  //     discount: formData.ticketType === TicketType.FAMILY ? formData.discount : 0,
+  //     totalPrice: total,
+  //     registrationDate: new Date().toISOString(),
+  //     isVerified: false
+  //   };
+  //   await storageService.saveParticipant(newParticipant);
+  //   setIsSubmitting(false);
+  //   onSuccess(newParticipant);
+  // };
+
+  // start here
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const newParticipant: Participant = {
-      id: crypto.randomUUID(),
-      ...formData,
-      firstName: formData.firstName.toUpperCase(),
-      lastName: formData.lastName.toUpperCase(),
-      discount: formData.ticketType === TicketType.FAMILY ? formData.discount : 0,
-      totalPrice: total,
-      registrationDate: new Date().toISOString(),
-      isVerified: false
-    };
+    try {
+      const newParticipant: Participant = {
+        id: crypto.randomUUID(),
+        ...formData,
+        firstName: formData.firstName.toUpperCase(),
+        lastName: formData.lastName.toUpperCase(),
+        discount: formData.ticketType === TicketType.FAMILY ? formData.discount : 0,
+        totalPrice: total,
+        registrationDate: new Date().toISOString(),
+        isVerified: false
+      };
 
-    await storageService.saveParticipant(newParticipant);
-    setIsSubmitting(false);
-    onSuccess(newParticipant);
+      // Attempt to save
+      await storageService.saveParticipant(newParticipant);
+
+      // If successful:
+      onSuccess(newParticipant);
+      // Optional: toast.success("Ticket Generated!")
+
+    } catch (error) {
+      console.error("Submission failed:", error);
+      // Show an alert or a shadcn toast here
+      // alert(`Failed to save ticket. ${error}.`);
+      Toaster(`Failed to save ticket. ${error}.`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+  // end here
 
   const handleNumericChange = (field: string, value: string) => {
     // If empty string, set to 0 to allow typing, but keep as empty in logic if needed
@@ -94,9 +128,9 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
               value={formData.ticketType}
               onChange={(e) => {
                 const val = e.target.value as TicketType;
-                setFormData({ 
-                  ...formData, 
-                  ticketType: val, 
+                setFormData({
+                  ...formData,
+                  ticketType: val,
                   familySize: val === TicketType.INDIVIDUAL ? 1 : Math.max(2, formData.familySize)
                 });
               }}
@@ -160,7 +194,7 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
           <div>
             <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">Checkout Total</p>
             <p className="text-sm text-slate-400">
-              {formData.familySize} x ₦{formData.pricePerTicket.toLocaleString()} 
+              {formData.familySize} x ₦{formData.pricePerTicket.toLocaleString()}
               {formData.ticketType === TicketType.FAMILY && formData.discount > 0 && ` - ₦${formData.discount.toLocaleString()}`}
             </p>
           </div>
@@ -169,10 +203,10 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
           </div>
         </div>
 
-        <Button 
-          type="submit" 
-          variant="primary" 
-          className="w-full py-4 text-lg font-bold" 
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full py-4 text-lg font-bold"
           isLoading={isSubmitting}
         >
           Generate Premium Ticket

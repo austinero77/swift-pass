@@ -28,11 +28,11 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({ participants, 
     const lName = (p.lastName || '').toLowerCase();
     const fullName = ((p as any).fullName || '').toLowerCase();
     const pId = (p.id || '').toLowerCase();
-    
-    return fName.includes(query) || 
-           lName.includes(query) || 
-           fullName.includes(query) || 
-           pId.includes(query);
+
+    return fName.includes(query) ||
+      lName.includes(query) ||
+      fullName.includes(query) ||
+      pId.includes(query);
   });
 
   return (
@@ -75,7 +75,7 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({ participants, 
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <button 
+                    <button
                       onClick={() => copyId(p.id)}
                       className="flex items-center gap-2 text-slate-400 font-mono text-[11px] hover:text-blue-400 transition-colors bg-slate-900/40 px-2 py-1 rounded-lg border border-white/5"
                     >
@@ -85,9 +85,8 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({ participants, 
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter ${
-                        p.ticketType === TicketType.FAMILY ? 'bg-purple-500/20 text-purple-300' : 'bg-emerald-500/20 text-emerald-300'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter ${p.ticketType === TicketType.FAMILY ? 'bg-purple-500/20 text-purple-300' : 'bg-emerald-500/20 text-emerald-300'
+                        }`}>
                         {p.ticketType}
                       </span>
                       <span className="text-slate-500 text-xs font-bold">x{p.familySize || 1}</span>
@@ -129,9 +128,9 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({ participants, 
                 </div>
                 <div>
                   <h3 className="text-white font-black text-base uppercase tracking-tight leading-tight">
-                    {p.lastName || p.firstName ? <>{p.lastName}<br/>{p.firstName}</> : ((p as any).fullName || 'UNKNOWN GUEST')}
+                    {p.lastName || p.firstName ? <>{p.lastName}<br />{p.firstName}</> : ((p as any).fullName || 'UNKNOWN GUEST')}
                   </h3>
-                  <button 
+                  <button
                     onClick={() => copyId(p.id)}
                     className="flex items-center gap-2 text-slate-500 font-mono text-[10px] mt-1 hover:text-blue-400"
                   >
@@ -140,18 +139,17 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({ participants, 
                   </button>
                 </div>
               </div>
-              <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${
-                p.ticketType === TicketType.FAMILY ? 'bg-purple-500/20 text-purple-300' : 'bg-emerald-500/20 text-emerald-300'
-              }`}>
+              <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${p.ticketType === TicketType.FAMILY ? 'bg-purple-500/20 text-purple-300' : 'bg-emerald-500/20 text-emerald-300'
+                }`}>
                 {p.ticketType} x{p.familySize || 1}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between pt-4 border-t border-slate-800">
               <div>
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Paid</p>
                 <p className="text-xl font-black text-white">₦{(p.totalPrice || 0).toLocaleString()}</p>
-                {p.isVerified && <span className="text-emerald-400 text-[8px] font-black uppercase tracking-widest block mt-1 flex items-center gap-1"><CheckCircle size={10}/> Checked-in</span>}
+                {p.isVerified && <span className="text-emerald-400 text-[8px] font-black uppercase tracking-widest block mt-1 flex items-center gap-1"><CheckCircle size={10} /> Checked-in</span>}
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => onView(p)} className="p-3 rounded-xl bg-slate-800 text-white shadow-none">
@@ -163,9 +161,21 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({ participants, 
               </div>
             </div>
           </div>
-        )) : (
-          <div className="text-center py-10 text-slate-500 text-xs font-black uppercase tracking-widest">Database Query: Zero Results</div>
-        )}
+        ))
+          // : (
+          //   <div className="text-center py-10 text-slate-500 text-xs font-black uppercase tracking-widest">No : Zero Results</div>
+          // )
+          : (
+            <tr>
+              <td colSpan={4} className="px-6 py-16 text-center">
+                <div className="flex flex-col items-center gap-2 text-slate-500">
+                  <Search size={32} className="opacity-20 mb-2" />
+                  <p className="text-sm font-medium">No registrations found in the database.</p>
+                </div>
+              </td>
+            </tr>
+          )
+        }
       </div>
     </div>
   );

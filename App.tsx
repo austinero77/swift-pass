@@ -8,12 +8,12 @@ import { RegistrationForm } from './components/RegistrationForm';
 import { ParticipantList } from './components/ParticipantList';
 import { TicketCard } from './components/TicketCard';
 import jsQR from 'jsqr';
-import { 
-  ShieldCheck, 
-  LayoutDashboard, 
-  UserPlus, 
-  ListFilter, 
-  LogOut, 
+import {
+  ShieldCheck,
+  LayoutDashboard,
+  UserPlus,
+  ListFilter,
+  LogOut,
   Settings,
   QrCode,
   CheckCircle2,
@@ -26,6 +26,7 @@ import {
   X,
   AlertTriangle
 } from 'lucide-react';
+import { Toaster } from 'sonner';
 
 // Live Scanner Page Component
 const ScannerPage = () => {
@@ -41,8 +42,8 @@ const ScannerPage = () => {
 
     const startCamera = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment' } 
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -101,11 +102,11 @@ const ScannerPage = () => {
           <ArrowLeft size={24} />
         </Button>
       </div>
-      
+
       <div className="relative w-full max-w-sm aspect-square border-4 border-blue-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20">
         <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" />
         <canvas ref={canvasRef} className="hidden" />
-        
+
         {scanning && (
           <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
             <div className="w-64 h-64 border-2 border-white/20 rounded-2xl relative">
@@ -133,7 +134,7 @@ const ScannerPage = () => {
 // Advanced Delete Confirmation Modal
 const DeleteModal = ({ isOpen, onClose, onConfirm, itemName }: { isOpen: boolean, onClose: () => void, onConfirm: () => void, itemName: string }) => {
   const [confirmText, setConfirmText] = useState('');
-  
+
   if (!isOpen) return null;
 
   return (
@@ -147,7 +148,7 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, itemName }: { isOpen: boolean
             <X size={24} />
           </button>
         </div>
-        
+
         <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Destructive Action</h2>
         <p className="text-slate-400 text-sm mb-8 leading-relaxed">
           You are about to permanently delete <span className="text-white font-bold">"{itemName}"</span>. This action cannot be reversed.
@@ -164,14 +165,14 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, itemName }: { isOpen: boolean
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
             />
           </div>
-          
+
           <div className="flex gap-3 pt-4">
             <Button variant="outline" className="flex-1 py-4 border-slate-800 shadow-none" onClick={onClose}>
               Cancel
             </Button>
-            <Button 
-              variant="danger" 
-              className="flex-1 py-4 font-bold" 
+            <Button
+              variant="danger"
+              className="flex-1 py-4 font-bold"
               disabled={confirmText.trim() !== 'DELETE'}
               onClick={() => {
                 onConfirm();
@@ -226,7 +227,7 @@ const PublicCheckPortal = () => {
         </div>
         <h1 className="text-2xl font-bold text-white text-center mb-2 uppercase tracking-tighter">Identity Check</h1>
         <p className="text-slate-500 text-center mb-8 text-xs font-bold uppercase tracking-widest">Manual Ticket Authentication</p>
-        
+
         <form onSubmit={handleCheck} className="space-y-4 mb-8">
           <div className="relative">
             <input
@@ -255,9 +256,8 @@ const PublicCheckPortal = () => {
               <span>{result.ticketType || 'Standard'} Access</span>
               <span>{result.familySize || 1} Person(s)</span>
             </div>
-            <div className={`mt-6 px-4 py-2 text-center rounded-xl text-[10px] font-black uppercase tracking-[0.2em] w-full ${
-              result.isVerified ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-            }`}>
+            <div className={`mt-6 px-4 py-2 text-center rounded-xl text-[10px] font-black uppercase tracking-[0.2em] w-full ${result.isVerified ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+              }`}>
               {result.isVerified ? 'Checked-In Active' : 'Waiting for Entry'}
             </div>
           </div>
@@ -271,7 +271,7 @@ const PublicCheckPortal = () => {
           </div>
         )}
 
-        <button 
+        <button
           onClick={() => navigate('/')}
           className="w-full text-center text-slate-600 text-[10px] font-black uppercase tracking-widest mt-12 hover:text-slate-400 transition-colors flex items-center justify-center gap-2"
         >
@@ -329,8 +329,8 @@ const VerificationRoute = () => {
               </div>
             </div>
             <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Access Authorized</h1>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">Identity Verified Successfully.<br/>Welcome to the Environment.</p>
-            
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">Identity Verified Successfully.<br />Welcome to the Environment.</p>
+
             <div className="bg-slate-800/50 rounded-3xl p-8 text-left border border-slate-700 shadow-inner">
               <div className="mb-6">
                 <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Primary Holder</p>
@@ -349,7 +349,7 @@ const VerificationRoute = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-10 text-slate-600 text-[10px] uppercase font-black tracking-widest leading-loose">
               Hash Code: {(participant.id || '').split('-')[0].toUpperCase()}
               <br />
@@ -365,7 +365,7 @@ const VerificationRoute = () => {
               </div>
             </div>
             <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Security Alert</h1>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">System failed to locate record.<br/>Access protocol blocked.</p>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">System failed to locate record.<br />Access protocol blocked.</p>
             <Button variant="outline" className="w-full py-5 rounded-2xl font-black border-slate-700" onClick={() => window.location.hash = '/'}>
               Terminate Session
             </Button>
@@ -376,6 +376,8 @@ const VerificationRoute = () => {
   );
 };
 
+const ADMIN_PASSKEY = import.meta.env.VITE_ADMIN_PASSKEY;
+
 const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -384,7 +386,7 @@ const App: React.FC = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [activeTab, setActiveTab] = useState<'list' | 'register'>('list');
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
-  
+
   // Delete Modal State
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: '', name: '' });
 
@@ -396,11 +398,13 @@ const App: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passkey === 'admin123') {
+    if (passkey === ADMIN_PASSKEY) {
       setIsAdmin(true);
       navigate('/dashboard');
     } else {
       alert('Invalid admin passkey!');
+      // toast.error('Access Denied: Invalid Passkey');
+      setPasskey('');
     }
   };
 
@@ -417,8 +421,11 @@ const App: React.FC = () => {
     storageService.getParticipants().then(setParticipants);
   };
 
+  // <Toaster position="top-center" richColors closeButton expand={true} />
+
   if (!isAdmin && location.pathname.startsWith('/dashboard')) {
     return (
+
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 px-6">
         <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
           <div className="flex justify-center mb-6">
@@ -473,20 +480,20 @@ const App: React.FC = () => {
                   <Camera size={24} className="text-blue-500" /> Scanner
                 </Button>
               </div>
-              <button 
+              <button
                 onClick={() => navigate('/check')}
                 className="block mx-auto text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] hover:text-blue-500 transition-colors"
               >
-                Manual Ticket Query
+                Manual Ticket Search
               </button>
             </div>
           </div>
         } />
-        
+
         <Route path="/scan" element={<ScannerPage />} />
         <Route path="/check" element={<PublicCheckPortal />} />
         <Route path="/verify/:id" element={<VerificationRoute />} />
-        
+
         <Route path="/dashboard" element={
           <div className="max-w-6xl mx-auto p-6 md:p-12">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
@@ -516,9 +523,9 @@ const App: React.FC = () => {
                   </Button>
                   <h2 className="text-2xl font-black text-white uppercase tracking-tight">Active E-Pass</h2>
                 </div>
-                <TicketCard 
-                  participant={selectedParticipant} 
-                  onExit={() => setSelectedParticipant(null)} 
+                <TicketCard
+                  participant={selectedParticipant}
+                  onExit={() => setSelectedParticipant(null)}
                 />
               </div>
             ) : (
@@ -526,11 +533,10 @@ const App: React.FC = () => {
                 <nav className="lg:col-span-3 space-y-3">
                   <button
                     onClick={() => setActiveTab('list')}
-                    className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${
-                      activeTab === 'list' 
-                      ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1' 
+                    className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${activeTab === 'list'
+                      ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1'
                       : 'text-slate-500 hover:bg-slate-800/50 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <ListFilter size={24} />
                     <span className="font-black text-base uppercase tracking-tight">Guest List</span>
@@ -538,18 +544,17 @@ const App: React.FC = () => {
                   </button>
                   <button
                     onClick={() => setActiveTab('register')}
-                    className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${
-                      activeTab === 'register' 
-                      ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1' 
+                    className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${activeTab === 'register'
+                      ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1'
                       : 'text-slate-500 hover:bg-slate-800/50 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <UserPlus size={24} />
                     <span className="font-black text-base uppercase tracking-tight">Register</span>
                   </button>
                   <div className="pt-6 border-t border-slate-900 mt-6">
                     <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest px-6 mb-4">Verification Tools</p>
-                    <button 
+                    <button
                       onClick={() => navigate('/scan')}
                       className="w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-slate-500 hover:text-blue-400 transition-colors"
                     >
@@ -561,14 +566,14 @@ const App: React.FC = () => {
 
                 <main className="lg:col-span-9">
                   {activeTab === 'list' ? (
-                    <ParticipantList 
-                      participants={participants} 
-                      onView={setSelectedParticipant} 
+                    <ParticipantList
+                      participants={participants}
+                      onView={setSelectedParticipant}
                       onDelete={(id) => {
                         const p = participants.find(x => x.id === id);
                         const name = p ? (p.lastName || p.firstName ? `${p.lastName} ${p.firstName}` : ((p as any).fullName || 'Legacy Guest')) : 'Unknown';
                         setDeleteModal({ isOpen: true, id, name });
-                      }} 
+                      }}
                     />
                   ) : (
                     <RegistrationForm onSuccess={handleRegistrationSuccess} />
@@ -580,9 +585,9 @@ const App: React.FC = () => {
         } />
       </Routes>
 
-      <DeleteModal 
-        isOpen={deleteModal.isOpen} 
-        onClose={() => setDeleteModal({ ...deleteModal, isOpen: false, id: '', name: '' })} 
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ ...deleteModal, isOpen: false, id: '', name: '' })}
         onConfirm={confirmDelete}
         itemName={deleteModal.name}
       />

@@ -1,15 +1,28 @@
 
 import { Participant } from '../types';
 
-const KV_REST_API_URL = "https://climbing-mollusk-58447.upstash.io";
-const KV_REST_API_TOKEN = "AeRPAAIncDIzMzdjY2VjODcwMWY0NDZmOTgyNWRiNzhlMmY3ZmI0Y3AyNTg0NDc";
+// const KV_REST_API_URL = "https://climbing-mollusk-58447.upstash.io";
+// const KV_REST_API_TOKEN = "AeRPAAIncDIzMzdjY2VjODcwMWY0NDZmOTgyNWRiNzhlMmY3ZmI0Y3AyNTg0NDc";
 const DB_KEY = "SP_DB_V2";
+
+// const KV_REST_API_URL = process.env.KV_REST_API_URL;
+// const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
+
+const KV_REST_API_URL = import.meta.env.VITE_KV_REST_API_URL;
+const KV_REST_API_TOKEN = import.meta.env.VITE_KV_REST_API_TOKEN;
+
+
 
 /**
  * Communicates with Upstash Redis REST API
  */
 async function kvFetch(command: string[]) {
   try {
+
+    if (!KV_REST_API_URL || !KV_REST_API_TOKEN) {
+      throw new Error("Missing Upstash Environment Variables");
+    } // newly added
+
     const response = await fetch(`${KV_REST_API_URL}`, {
       method: 'POST',
       headers: {
