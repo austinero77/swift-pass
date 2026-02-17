@@ -15,10 +15,10 @@ interface TicketCardProps {
 export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) => {
   const ticketRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
-  
+
   const currentUrl = window.location.href.split('#')[0];
   const verificationUrl = `${currentUrl}#/verify/${participant.id}`;
-  
+
   const isFamily = participant.ticketType === TicketType.FAMILY;
   const shortId = participant.id.split('-')[0].toUpperCase();
 
@@ -30,7 +30,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
 
   const downloadPDF = async () => {
     if (!ticketRef.current) return;
-    
+
     const canvas = await html2canvas(ticketRef.current, {
       backgroundColor: '#0f172a',
       scale: 2,
@@ -41,18 +41,17 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
       unit: 'px',
       format: [canvas.width / 2, canvas.height / 2]
     });
-    
+
     pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
     pdf.save(`swiftpass-${shortId}.pdf`);
   };
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div 
+      <div
         ref={ticketRef}
-        className={`relative w-full rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ${
-          isFamily ? 'bg-gradient-to-br from-indigo-900 to-purple-900' : 'bg-gradient-to-br from-emerald-900 to-cyan-900'
-        }`}
+        className={`relative w-full rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 ${isFamily ? 'bg-gradient-to-br from-indigo-900 to-purple-900' : 'bg-gradient-to-br from-emerald-900 to-cyan-900'
+          }`}
       >
         {/* Top Perforation Circles */}
         <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-slate-950 rounded-full z-10"></div>
@@ -63,12 +62,12 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
 
         <div className="p-8 border-b border-white/10 flex justify-between items-start">
           <div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">SWIFT<span className="text-blue-400">PASS</span></h2>
+
+            <h2 className="text-2xl font-bold text-white tracking-tight"><span className="text-yellow-400">CGDC</span> Picnic<span className="text-blue-400">PASS</span></h2>
             <p className="text-white/60 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Official E-Ticket</p>
           </div>
-          <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${
-            isFamily ? 'bg-purple-500/20 text-purple-300' : 'bg-emerald-500/20 text-emerald-300'
-          }`}>
+          <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${isFamily ? 'bg-purple-500/20 text-purple-300' : 'bg-emerald-500/20 text-emerald-300'
+            }`}>
             {participant.ticketType} Category
           </div>
         </div>
@@ -78,13 +77,13 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
           <div className="flex justify-between items-end">
             <div>
               <p className="text-white/40 text-[9px] uppercase font-black mb-1 tracking-widest">Main Attendee</p>
-              <h3 className="text-2xl font-black text-white leading-tight uppercase">
-                {participant.lastName}<br/>{participant.firstName}
+              <h3 className="text-1xl font-black text-white leading-tight uppercase">
+                {participant.firstName} {participant.lastName}
               </h3>
             </div>
             <div className="text-right group">
               <p className="text-white/40 text-[9px] uppercase font-black mb-1 tracking-widest">Pass ID</p>
-              <button 
+              <button
                 onClick={copyId}
                 className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-all px-2 py-1 rounded-lg text-sm font-mono text-blue-400 font-bold border border-white/5"
               >
@@ -98,7 +97,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
             <div>
               <p className="text-white/40 text-[9px] uppercase font-black mb-1 tracking-widest">Quantity</p>
               <div className="flex items-center text-white gap-2">
-                <span className="font-bold text-lg">{participant.familySize} PAX</span>
+                <span className="font-bold text-md">{participant.familySize} PAX</span>
               </div>
             </div>
             <div className="text-right">
@@ -109,14 +108,21 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
               </div>
             </div>
           </div>
+          <p className="text-[8px] font-bold text-white/70 uppercase tracking-[0.3em]">ADDRESS : ALAUSA, SECRETARIATE IKEJA,LAGOS.</p>
+          <div className="bg-black/10 p-4 flex justify-center items-center gap-2 border-t border-white/5">
+            <MapPin size={14} className="text-yellow-400" />
+            <span className="text-[8px] font-bold text-yellow-400 uppercase tracking-[0.3em]">Venue: JOHNSON  JAKANDE TINUBU PARK</span>
+          </div>
         </div>
+
+
 
         {/* Bottom Stub */}
         <div className="p-8 pt-10 space-y-6">
           <div className="flex justify-center p-6 bg-white rounded-3xl shadow-xl transform hover:scale-105 transition-transform duration-300">
-            <QRCodeSVG 
-              value={verificationUrl} 
-              size={150} 
+            <QRCodeSVG
+              value={verificationUrl}
+              size={150}
               includeMargin={false}
               level="H"
               fgColor="#0f172a"
@@ -128,11 +134,11 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-white/70 text-xs font-bold uppercase">
                 <Calendar size={14} className="text-blue-400" />
-                <span>JUL 15, 2024</span>
+                <span>March 20, 2026</span>
               </div>
               <div className="flex items-center gap-2 text-white/70 text-xs font-bold uppercase">
                 <Clock size={14} className="text-blue-400" />
-                <span>09:00 AM</span>
+                <span>08:00 AM</span>
               </div>
             </div>
             <div className="text-right">
@@ -144,21 +150,21 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
 
         <div className="bg-black/30 p-6 flex justify-center items-center gap-2 border-t border-white/5">
           <MapPin size={14} className="text-white/40" />
-          <span className="text-[10px] font-bold text-white/50 uppercase tracking-[0.3em]">Eko Hotels • VI • Lagos</span>
+          <span className="text-[8px] font-bold text-white/50 uppercase tracking-[0.3em]">JOHNSON JAKANDE TINUBU PARK • Lagos</span>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full">
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           className="flex-1 gap-2 py-4 font-bold text-base shadow-xl"
           onClick={downloadPDF}
         >
           <Download size={20} />
-          Save E-Ticket
+          Download PDf
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="flex-1 py-4 font-bold text-base border-slate-700 text-slate-300"
           onClick={onExit}
         >

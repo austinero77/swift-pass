@@ -4,7 +4,7 @@ import { TicketType, Participant } from '../types';
 import { Button } from './ui/Button';
 import { storageService } from '../services/storageService';
 import { UserPlus, Calculator, Tag, Users } from 'lucide-react';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 
 export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }> = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -12,11 +12,11 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
     lastName: '',
     ticketType: TicketType.INDIVIDUAL,
     familySize: 1,
-    pricePerTicket: 5000,
-    discount: 0
+    pricePerTicket: 7000,
+    discount: 3000
   });
 
-  const [total, setTotal] = useState(5000);
+  const [total, setTotal] = useState(7000);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -25,35 +25,22 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
     setTotal(Math.max(0, base - discountToApply));
   }, [formData]);
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsSubmitting(true);
-  //   const newParticipant: Participant = {
-  //     id: crypto.randomUUID(),
-  //     ...formData,
-  //     firstName: formData.firstName.toUpperCase(),
-  //     lastName: formData.lastName.toUpperCase(),
-  //     discount: formData.ticketType === TicketType.FAMILY ? formData.discount : 0,
-  //     totalPrice: total,
-  //     registrationDate: new Date().toISOString(),
-  //     isVerified: false
-  //   };
-  //   await storageService.saveParticipant(newParticipant);
-  //   setIsSubmitting(false);
-  //   onSuccess(newParticipant);
-  // };
 
-  // start here
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+
     try {
+      const cleanFirstName = formData.firstName.trim().toUpperCase();
+      const cleanLastName = formData.lastName.trim().toUpperCase();
+
       const newParticipant: Participant = {
         id: crypto.randomUUID(),
         ...formData,
-        firstName: formData.firstName.toUpperCase(),
-        lastName: formData.lastName.toUpperCase(),
+        firstName: cleanFirstName,
+        lastName: cleanLastName,
         discount: formData.ticketType === TicketType.FAMILY ? formData.discount : 0,
         totalPrice: total,
         registrationDate: new Date().toISOString(),
@@ -64,19 +51,20 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
       await storageService.saveParticipant(newParticipant);
 
       // If successful:
+      toast.success("Ticket generated successfully!")
+
       onSuccess(newParticipant);
-      // Optional: toast.success("Ticket Generated!")
+
 
     } catch (error) {
       console.error("Submission failed:", error);
-      // Show an alert or a shadcn toast here
-      // alert(`Failed to save ticket. ${error}.`);
-      Toaster(`Failed to save ticket. ${error}.`);
+
+      toast.error(`Failed to save ticket. ${error}.`);
     } finally {
       setIsSubmitting(false);
     }
   };
-  // end here
+
 
   const handleNumericChange = (field: string, value: string) => {
     // If empty string, set to 0 to allow typing, but keep as empty in logic if needed
@@ -209,9 +197,11 @@ export const RegistrationForm: React.FC<{ onSuccess: (p: Participant) => void }>
           className="w-full py-4 text-lg font-bold"
           isLoading={isSubmitting}
         >
-          Generate Premium Ticket
+          Generate Ticket
         </Button>
       </form>
+
     </div>
+
   );
 };

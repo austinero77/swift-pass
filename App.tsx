@@ -26,7 +26,14 @@ import {
   X,
   AlertTriangle
 } from 'lucide-react';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
+
+
+
+// Use it in your button
+{/* <Button onClick={handleBack} variant="ghost">
+  <ArrowLeft size={20} /> Back
+</Button> */}
 
 // Live Scanner Page Component
 const ScannerPage = () => {
@@ -239,7 +246,7 @@ const PublicCheckPortal = () => {
             />
           </div>
           <Button type="submit" variant="primary" className="w-full py-4 font-black text-base shadow-xl" isLoading={loading}>
-            Query Database
+            Search
           </Button>
         </form>
 
@@ -275,7 +282,7 @@ const PublicCheckPortal = () => {
           onClick={() => navigate('/')}
           className="w-full text-center text-slate-600 text-[10px] font-black uppercase tracking-widest mt-12 hover:text-slate-400 transition-colors flex items-center justify-center gap-2"
         >
-          <ArrowLeft size={14} /> Back to Entry Point
+          <ArrowLeft size={14} /> Back to Home
         </button>
       </div>
     </div>
@@ -283,10 +290,39 @@ const PublicCheckPortal = () => {
 };
 
 // Verification Route
-const VerificationRoute = () => {
+const VerificationRoutesss = () => {
   const { id } = useParams<{ id: string }>();
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [loading, setLoading] = useState(true);
+  // const navigate = useNavigate();
+
+  // start
+  // useEffect(() => {
+  //   let isMounted = true; // Prevent state updates on unmounted component
+
+  //   if (id) {
+  //     storageService.getParticipantById(id).then(async p => {
+  //       if (!isMounted) return;
+
+  //       if (p) {
+  //         // ONLY update if they aren't already verified
+  //         if (!p.isVerified) {
+  //           const updated = { ...p, isVerified: true };
+  //           await storageService.updateParticipant(updated);
+  //           setParticipant(updated);
+  //         } else {
+  //           // If already verified, just show the data
+  //           setParticipant(p);
+  //         }
+  //       }
+  //       setLoading(false);
+  //     });
+  //   }
+
+  //   return () => { isMounted = false; };
+  // }, [id]); // This is now safe
+
+  // finish
 
   useEffect(() => {
     if (id) {
@@ -318,56 +354,149 @@ const VerificationRoute = () => {
   );
 
   return (
+    <div>
+      <div className="absolute top-6 left-6 z-10">
+        <Button variant="ghost" onClick={() => window.location.hash = '/'} className="text-white bg-white/10 p-4 rounded-full">
+          <ArrowLeft size={24} />
+        </Button>
+      </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-6">
+        <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl overflow-hidden relative">
+          {participant ? (
+            <>
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>
+              <div className="mb-8 flex justify-center">
+                <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center border-4 border-emerald-500/30 shadow-2xl shadow-emerald-500/20">
+                  <CheckCircle2 className="text-emerald-500" size={48} />
+                </div>
+              </div>
+              <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Access Authorized</h1>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">Identity Verified Successfully.<br />Welcome to the Environment.</p>
+
+              <div className="bg-slate-800/50 rounded-3xl p-8 text-left border border-slate-700 shadow-inner">
+                <div className="mb-6">
+                  <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Primary Holder</p>
+                  <p className="text-2xl font-black text-white uppercase leading-none">
+                    {participant.lastName || participant.firstName ? `${participant.lastName} ${participant.firstName}` : ((participant as any).fullName || 'Legacy Guest')}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Type</p>
+                    <p className="text-white font-black text-sm uppercase tracking-tight">{participant.ticketType || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Group Size</p>
+                    <p className="text-white font-black text-sm uppercase tracking-tight">{participant.familySize || 1} PAX</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-10 text-slate-600 text-[10px] uppercase font-black tracking-widest leading-loose">
+                Hash Code: {(participant.id || '').split('-')[0].toUpperCase()}
+                <br />
+                Auth Date: {new Date().toLocaleDateString()}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-rose-500"></div>
+              <div className="mb-8 flex justify-center">
+                <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center border-4 border-rose-500/30">
+                  <AlertCircle className="text-rose-500" size={48} />
+                </div>
+              </div>
+              <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Security Alert</h1>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">System failed to locate record.<br />Access protocol denied.</p>
+              <Button variant="outline" className="w-full py-5 rounded-2xl font-black border-slate-700" onClick={() => window.location.hash = '/'}>
+                Terminate Session
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Verification Page Component
+const VerificationRoute = () => {
+  const { id } = useParams<{ id: string }>();
+  const [participant, setParticipant] = useState<Participant | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      storageService.getParticipantById(id).then(p => {
+        if (p) {
+          storageService.updateParticipant({ ...p, isVerified: true });
+          setParticipant({ ...p, isVerified: true });
+        }
+        setLoading(false);
+      });
+    }
+  }, [id]);
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+      <div className="animate-pulse flex flex-col items-center gap-4">
+        <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center">
+          <QrCode className="text-blue-500 animate-bounce" />
+        </div>
+        <p className="text-slate-400 font-medium tracking-wide uppercase text-xs">Validating Secure Token...</p>
+      </div>
+    </div>
+  );
+
+  return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-6">
       <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl overflow-hidden relative">
         {participant ? (
           <>
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>
-            <div className="mb-8 flex justify-center">
-              <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center border-4 border-emerald-500/30 shadow-2xl shadow-emerald-500/20">
-                <CheckCircle2 className="text-emerald-500" size={48} />
+            <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
+            <div className="mb-6 flex justify-center">
+              <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center border-2 border-emerald-500/50 shadow-lg shadow-emerald-500/10">
+                <CheckCircle2 className="text-emerald-500" size={40} />
               </div>
             </div>
-            <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Access Authorized</h1>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">Identity Verified Successfully.<br />Welcome to the Environment.</p>
+            <h1 className="text-2xl font-bold text-white mb-2 uppercase tracking-tight">Verified Entry</h1>
+            <p className="text-slate-400 text-sm mb-8">Access granted. This ticket is genuine and confirmed.</p>
 
-            <div className="bg-slate-800/50 rounded-3xl p-8 text-left border border-slate-700 shadow-inner">
-              <div className="mb-6">
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Primary Holder</p>
-                <p className="text-2xl font-black text-white uppercase leading-none">
-                  {participant.lastName || participant.firstName ? `${participant.lastName} ${participant.firstName}` : ((participant as any).fullName || 'Legacy Guest')}
-                </p>
+            <div className="bg-slate-800/50 rounded-2xl p-6 text-left border border-slate-700">
+              <div className="mb-4">
+                <p className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-widest">Guest Name</p>
+                <p className="text-lg font-bold text-white leading-tight">${participant.lastName} ${participant.firstName}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Type</p>
-                  <p className="text-white font-black text-sm uppercase tracking-tight">{participant.ticketType || 'N/A'}</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-widest">Type</p>
+                  <p className="text-white font-semibold text-sm">{participant.ticketType}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Group Size</p>
-                  <p className="text-white font-black text-sm uppercase tracking-tight">{participant.familySize || 1} PAX</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-widest">Capacity</p>
+                  <p className="text-white font-semibold text-sm">{participant.familySize} PAX</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-10 text-slate-600 text-[10px] uppercase font-black tracking-widest leading-loose">
-              Hash Code: {(participant.id || '').split('-')[0].toUpperCase()}
+            <div className="mt-8 pt-8 border-t border-slate-800 text-slate-500 text-[10px] uppercase font-mono tracking-tighter">
+              Verify Code: {participant.id.split('-')[0].toUpperCase()} | ₦{participant.totalPrice.toLocaleString()}
               <br />
-              Auth Date: {new Date().toLocaleDateString()}
+              Time: {new Date().toLocaleTimeString()}
             </div>
           </>
         ) : (
           <>
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-rose-500"></div>
-            <div className="mb-8 flex justify-center">
-              <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center border-4 border-rose-500/30">
-                <AlertCircle className="text-rose-500" size={48} />
+            <div className="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
+            <div className="mb-6 flex justify-center">
+              <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center border-2 border-rose-500/50">
+                <AlertCircle className="text-rose-500" size={40} />
               </div>
             </div>
-            <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Security Alert</h1>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10 leading-relaxed">System failed to locate record.<br />Access protocol blocked.</p>
-            <Button variant="outline" className="w-full py-5 rounded-2xl font-black border-slate-700" onClick={() => window.location.hash = '/'}>
-              Terminate Session
+            <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
+            <p className="text-slate-400 text-sm mb-8">No valid record found. This ticket may be fraudulent or expired.</p>
+            <Button variant="outline" className="w-full py-4" onClick={() => window.location.hash = '/'}>
+              Return to Safety
             </Button>
           </>
         )}
@@ -402,8 +531,8 @@ const App: React.FC = () => {
       setIsAdmin(true);
       navigate('/dashboard');
     } else {
-      alert('Invalid admin passkey!');
-      // toast.error('Access Denied: Invalid Passkey');
+
+      toast.error('Access Denied: Invalid Passkey');
       setPasskey('');
     }
   };
@@ -421,12 +550,11 @@ const App: React.FC = () => {
     storageService.getParticipants().then(setParticipants);
   };
 
-  // <Toaster position="top-center" richColors closeButton expand={true} />
+
 
   if (!isAdmin && location.pathname.startsWith('/dashboard')) {
     return (
-
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 px-6">
+      <><Toaster position="top-center" richColors closeButton /><div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 px-6">
         <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/30">
@@ -442,156 +570,147 @@ const App: React.FC = () => {
                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center tracking-[0.5em] font-mono text-xl"
                 placeholder="PIN"
                 value={passkey}
-                onChange={(e) => setPasskey(e.target.value)}
-              />
+                onChange={(e) => setPasskey(e.target.value)} />
             </div>
             <Button type="submit" variant="primary" className="w-full py-5 font-black text-lg shadow-2xl">
               Unlock Terminal
             </Button>
           </form>
+
           <div className="mt-8 text-center">
             <p className="text-slate-700 text-[10px] uppercase font-bold tracking-widest">Demo Key: <span className="text-slate-500 font-mono">admin123</span></p>
           </div>
         </div>
-      </div>
+      </div></>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 md:pb-0">
+    <><Toaster position="top-center" richColors closeButton /><div className="min-h-screen bg-slate-950 text-slate-100 pb-20 md:pb-0">
       <Routes>
-        <Route path="/" element={
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-            <div className="space-y-8 max-w-2xl animate-in fade-in duration-700">
-              <div className="inline-block p-6 bg-blue-500/10 rounded-[2.5rem] border border-blue-500/20 mb-4 shadow-2xl shadow-blue-500/10">
-                <ShieldCheck className="text-blue-500" size={56} />
-              </div>
-              <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-none">
-                SWIFT<span className="text-blue-500">PASS</span>
-              </h1>
-              <p className="text-lg md:text-xl text-slate-500 font-bold uppercase tracking-widest leading-relaxed max-w-lg mx-auto">
-                Secure Registry • Live Verification • KV Storage v2
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
-                <Button size="lg" className="w-full sm:w-auto px-16 py-8 rounded-[2rem] text-xl font-black uppercase tracking-tighter" onClick={() => navigate('/dashboard')}>
-                  Open Terminal
-                </Button>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto px-16 py-8 rounded-[2rem] text-xl font-black uppercase tracking-tighter flex items-center gap-3 border-slate-800 shadow-none" onClick={() => navigate('/scan')}>
-                  <Camera size={24} className="text-blue-500" /> Scanner
-                </Button>
-              </div>
-              <button
-                onClick={() => navigate('/check')}
-                className="block mx-auto text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] hover:text-blue-500 transition-colors"
-              >
-                Manual Ticket Search
-              </button>
+        <Route path="/" element={<div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+          <div className="space-y-8 max-w-2xl animate-in fade-in duration-700">
+            <div className="inline-block p-6 bg-blue-500/10 rounded-[2.5rem] border border-blue-500/20 mb-4 shadow-2xl shadow-blue-500/10">
+              <ShieldCheck className="text-blue-500" size={56} />
             </div>
+            <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-none">
+              PICNIC<span className="text-blue-500">PASS</span>
+            </h1>
+            <p className="text-lg md:text-sm text-slate-500 font-bold uppercase tracking-widest leading-relaxed max-w-lg mx-auto">
+              Seemless Registration • Live Verification • Secure Cloud Storage
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
+              <Button size="lg" className="w-full sm:w-auto px-16 py-8 rounded-[2rem] text-xl font-black uppercase tracking-tighter" onClick={() => navigate('/dashboard')}>
+                Open Portal
+              </Button>
+              <Button variant="outline" size="lg" className="w-full sm:w-auto px-16 py-8 rounded-[2rem] text-xl font-black uppercase tracking-tighter flex items-center gap-3 border-slate-800 shadow-none" onClick={() => navigate('/scan')}>
+                <Camera size={24} className="text-blue-500" /> Scanner
+              </Button>
+            </div>
+            <button
+              onClick={() => navigate('/check')}
+              className="block mx-auto text-slate-600 text-[14px] font-black uppercase tracking-[0.3em] hover:text-blue-500 transition-colors"
+            >
+              Manual Ticket Search
+            </button>
           </div>
-        } />
+        </div>} />
 
         <Route path="/scan" element={<ScannerPage />} />
         <Route path="/check" element={<PublicCheckPortal />} />
         <Route path="/verify/:id" element={<VerificationRoute />} />
 
-        <Route path="/dashboard" element={
-          <div className="max-w-6xl mx-auto p-6 md:p-12">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/40">
-                  <LayoutDashboard className="text-white" size={28} />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-black text-white tracking-tight uppercase">Dashboard</h1>
-                  <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span> Live KV Node
-                  </p>
-                </div>
+        <Route path="/dashboard" element={<div className="max-w-6xl mx-auto p-6 md:p-12">
+          <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/40">
+                <LayoutDashboard className="text-white" size={28} />
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="danger" size="sm" className="items-center gap-2 rounded-xl px-6 py-4 font-bold" onClick={() => { setIsAdmin(false); navigate('/'); }}>
-                  <LogOut size={18} /> Exit Console
+              <div>
+                <h1 className="text-3xl font-black text-white tracking-tight uppercase">Dashboard</h1>
+                <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span> Live CGDC picnic server
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="danger" size="sm" className="items-center gap-2 rounded-xl px-6 py-4 font-bold" onClick={() => { setIsAdmin(false); navigate('/'); }}>
+                <LogOut size={18} /> Log Out
+              </Button>
+            </div>
+          </header>
+
+          {selectedParticipant ? (
+            <div className="animate-in fade-in duration-500">
+              <div className="flex items-center gap-4 mb-8">
+                <Button variant="ghost" size="sm" className="p-3 bg-slate-900 rounded-2xl" onClick={() => setSelectedParticipant(null)}>
+                  <ArrowLeft size={24} />
                 </Button>
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight">Active E-Pass</h2>
               </div>
-            </header>
-
-            {selectedParticipant ? (
-              <div className="animate-in fade-in duration-500">
-                <div className="flex items-center gap-4 mb-8">
-                  <Button variant="ghost" size="sm" className="p-3 bg-slate-900 rounded-2xl" onClick={() => setSelectedParticipant(null)}>
-                    <ArrowLeft size={24} />
-                  </Button>
-                  <h2 className="text-2xl font-black text-white uppercase tracking-tight">Active E-Pass</h2>
+              <TicketCard
+                participant={selectedParticipant}
+                onExit={() => setSelectedParticipant(null)} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              <nav className="lg:col-span-3 space-y-3">
+                <button
+                  onClick={() => setActiveTab('list')}
+                  className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${activeTab === 'list'
+                    ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1'
+                    : 'text-slate-500 hover:bg-slate-800/50 hover:text-white'}`}
+                >
+                  <ListFilter size={24} />
+                  <span className="font-black text-base uppercase tracking-tight">Guest List</span>
+                  <span className="ml-auto bg-black/20 px-3 py-1 rounded-full text-[10px] font-black">{participants.length}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('register')}
+                  className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${activeTab === 'register'
+                    ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1'
+                    : 'text-slate-500 hover:bg-slate-800/50 hover:text-white'}`}
+                >
+                  <UserPlus size={24} />
+                  <span className="font-black text-base uppercase tracking-tight">Register</span>
+                </button>
+                <div className="pt-6 border-t border-slate-900 mt-6">
+                  <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest px-6 mb-4">Verification Tools</p>
+                  <button
+                    onClick={() => navigate('/scan')}
+                    className="w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-slate-500 hover:text-blue-400 transition-colors"
+                  >
+                    <Camera size={24} />
+                    <span className="font-black text-base uppercase tracking-tight">QR Scanner</span>
+                  </button>
                 </div>
-                <TicketCard
-                  participant={selectedParticipant}
-                  onExit={() => setSelectedParticipant(null)}
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <nav className="lg:col-span-3 space-y-3">
-                  <button
-                    onClick={() => setActiveTab('list')}
-                    className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${activeTab === 'list'
-                      ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1'
-                      : 'text-slate-500 hover:bg-slate-800/50 hover:text-white'
-                      }`}
-                  >
-                    <ListFilter size={24} />
-                    <span className="font-black text-base uppercase tracking-tight">Guest List</span>
-                    <span className="ml-auto bg-black/20 px-3 py-1 rounded-full text-[10px] font-black">{participants.length}</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('register')}
-                    className={`w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] transition-all duration-300 ${activeTab === 'register'
-                      ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 transform -translate-y-1'
-                      : 'text-slate-500 hover:bg-slate-800/50 hover:text-white'
-                      }`}
-                  >
-                    <UserPlus size={24} />
-                    <span className="font-black text-base uppercase tracking-tight">Register</span>
-                  </button>
-                  <div className="pt-6 border-t border-slate-900 mt-6">
-                    <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest px-6 mb-4">Verification Tools</p>
-                    <button
-                      onClick={() => navigate('/scan')}
-                      className="w-full flex items-center gap-4 px-6 py-5 rounded-[1.5rem] text-slate-500 hover:text-blue-400 transition-colors"
-                    >
-                      <Camera size={24} />
-                      <span className="font-black text-base uppercase tracking-tight">QR Scanner</span>
-                    </button>
-                  </div>
-                </nav>
+              </nav>
 
-                <main className="lg:col-span-9">
-                  {activeTab === 'list' ? (
-                    <ParticipantList
-                      participants={participants}
-                      onView={setSelectedParticipant}
-                      onDelete={(id) => {
-                        const p = participants.find(x => x.id === id);
-                        const name = p ? (p.lastName || p.firstName ? `${p.lastName} ${p.firstName}` : ((p as any).fullName || 'Legacy Guest')) : 'Unknown';
-                        setDeleteModal({ isOpen: true, id, name });
-                      }}
-                    />
-                  ) : (
-                    <RegistrationForm onSuccess={handleRegistrationSuccess} />
-                  )}
-                </main>
-              </div>
-            )}
-          </div>
-        } />
+              <main className="lg:col-span-9">
+                {activeTab === 'list' ? (
+                  <ParticipantList
+                    participants={participants}
+                    onView={setSelectedParticipant}
+                    onDelete={(id) => {
+                      const p = participants.find(x => x.id === id);
+                      const name = p ? (p.lastName || p.firstName ? `${p.lastName} ${p.firstName}` : ((p as any).fullName || 'Legacy Guest')) : 'Unknown';
+                      setDeleteModal({ isOpen: true, id, name });
+                    }} />
+                ) : (
+                  <RegistrationForm onSuccess={handleRegistrationSuccess} />
+                )}
+              </main>
+            </div>
+          )}
+        </div>} />
       </Routes>
 
       <DeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ ...deleteModal, isOpen: false, id: '', name: '' })}
         onConfirm={confirmDelete}
-        itemName={deleteModal.name}
-      />
-    </div>
+        itemName={deleteModal.name} />
+    </div></>
   );
 };
 
