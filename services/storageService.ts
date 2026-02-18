@@ -1,5 +1,6 @@
 
 import { Participant } from '../types';
+import { Toaster, toast } from 'sonner';
 
 // const KV_REST_API_URL = "https://climbing-mollusk-58447.upstash.io";
 // const KV_REST_API_TOKEN = "AeRPAAIncDIzMzdjY2VjODcwMWY0NDZmOTgyNWRiNzhlMmY3ZmI0Y3AyNTg0NDc";
@@ -48,9 +49,17 @@ export const storageService = {
   getParticipants: async (): Promise<Participant[]> => {
     try {
       const data = await kvFetch(['GET', DB_KEY]);
-      return data ? JSON.parse(data) : [];
+
+      // return data ? JSON.parse(data) : [];
+
+      const parsed: Participant[] = data ? JSON.parse(data) : [];
+      return parsed.sort((a, b) =>
+        new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
+      );
+
     } catch (e) {
-      console.error("Failed to fetch from KV:", e);
+      toast.error(`Failed to fetch records. \n${e}`);
+      // console.error("Failed to fetch from KV:", e);
       return [];
     }
   },

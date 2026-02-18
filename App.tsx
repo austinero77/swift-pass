@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Participant } from './types';
 import { storageService } from './services/storageService';
@@ -24,7 +24,8 @@ import {
   Lock,
   Camera,
   X,
-  AlertTriangle
+  AlertTriangle,
+  RotateCw,
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -465,7 +466,7 @@ const VerificationRoute = () => {
             <div className="bg-slate-800/50 rounded-2xl p-6 text-left border border-slate-700">
               <div className="mb-4">
                 <p className="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-widest">Guest Name</p>
-                <p className="text-lg font-bold text-white leading-tight">${participant.lastName} ${participant.firstName}</p>
+                <p className="text-lg font-bold text-white leading-tight">${participant.firstName} ${participant.lastName}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -515,15 +516,75 @@ const App: React.FC = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [activeTab, setActiveTab] = useState<'list' | 'register'>('list');
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+  const [fetching, setFetching] = useState(false);
+
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Function to trigger a reload manually
+  const triggerRefresh = () => setRefreshKey(prev => prev + 1);
+
 
   // Delete Modal State
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: '', name: '' });
 
   useEffect(() => {
-    if (isAdmin) {
-      storageService.getParticipants().then(setParticipants);
-    }
-  }, [isAdmin]);
+
+    if (!isAdmin) return;
+
+    let isMounted = true; // Cleanup flag
+
+    const loadData = async () => {
+
+      try {
+        setFetching(true);
+
+        // Create a manual delay (e.g., 2000ms = 2 seconds)
+        // await new Promise(resolve => setTimeout(resolve, 6000));
+
+        const data = await storageService.getParticipants();
+        if (!isMounted) return;
+        setParticipants(data);
+
+      } catch (error) {
+        // toast.error(`Failed to fetch records. ${error}`);
+        // console.log('need to see the error thanks');
+      } finally {
+        if (isMounted) setFetching(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; }; // Cleanup prevents memory leaks
+
+  }, [isAdmin, refreshKey]);
+
+  // const stats = useMemo(() => {
+  //   const list = participants ?? [];
+  //   const total = list.length;
+  //   const arrived = list.filter(p => p?.isVerified).length;
+  //   const revenue = list.reduce((sum, p) => sum + (p?.totalPrice || 0), 0);
+
+  //   return {
+  //     total,
+  //     arrived,
+  //     percentage: total > 0 ? Math.round((arrived / total) * 100) : 0,
+  //     revenue
+  //   };
+  // }, [participants]);
+
+  const stats = useMemo(() => {
+    const list = participants ?? [];
+    const total = list.length;
+    const checkedInCount = list.filter(p => p?.isVerified).length;
+    const revenue = list.reduce((sum, p) => sum + (p?.totalPrice || 0), 0);
+
+    return {
+      total,
+      checkedInCount,
+      checkInPercentage: total > 0 ? Math.round((checkedInCount / total) * 100) : 0,
+      revenue
+    };
+  }, [participants]);
+
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -539,10 +600,15 @@ const App: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!deleteModal.id) return;
-    await storageService.deleteParticipant(deleteModal.id);
-    const updated = await storageService.getParticipants();
-    setParticipants(updated);
-    setDeleteModal({ isOpen: false, id: '', name: '' });
+    try {
+      await storageService.deleteParticipant(deleteModal.id);
+      const updated = await storageService.getParticipants();
+      setParticipants(updated);
+      setDeleteModal({ isOpen: false, id: '', name: '' });
+      toast.success("Record deleted successfully!");
+    } catch (error) {
+      toast.error(`Error: ${error}`);
+    }
   };
 
   const handleRegistrationSuccess = (participant: Participant) => {
@@ -561,7 +627,7 @@ const App: React.FC = () => {
               <Lock className="text-blue-500" size={32} />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white text-center mb-2 uppercase tracking-tighter">Admin Vault</h1>
+          <h1 className="text-3xl font-bold text-white text-center mb-2 uppercase tracking-tighter">Admin Login</h1>
           <p className="text-slate-500 text-center mb-10 text-[10px] font-black uppercase tracking-[0.3em]">Identity Verification Required</p>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -573,17 +639,20 @@ const App: React.FC = () => {
                 onChange={(e) => setPasskey(e.target.value)} />
             </div>
             <Button type="submit" variant="primary" className="w-full py-5 font-black text-lg shadow-2xl">
-              Unlock Terminal
+              Login
             </Button>
           </form>
 
-          <div className="mt-8 text-center">
+          {/* <div className="mt-8 text-center">
             <p className="text-slate-700 text-[10px] uppercase font-bold tracking-widest">Demo Key: <span className="text-slate-500 font-mono">admin123</span></p>
-          </div>
+          </div> */}
         </div>
       </div></>
     );
   }
+
+
+
 
   return (
     <><Toaster position="top-center" richColors closeButton /><div className="min-h-screen bg-slate-950 text-slate-100 pb-20 md:pb-0">
@@ -594,7 +663,7 @@ const App: React.FC = () => {
               <ShieldCheck className="text-blue-500" size={56} />
             </div>
             <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-none">
-              PICNIC<span className="text-blue-500">PASS</span>
+              Swift<span className="text-blue-500">PASS</span>
             </h1>
             <p className="text-lg md:text-sm text-slate-500 font-bold uppercase tracking-widest leading-relaxed max-w-lg mx-auto">
               Seemless Registration • Live Verification • Secure Cloud Storage
@@ -627,18 +696,75 @@ const App: React.FC = () => {
                 <LayoutDashboard className="text-white" size={28} />
               </div>
               <div>
-                <h1 className="text-3xl font-black text-white tracking-tight uppercase">Dashboard</h1>
+                <h1 className="text-3xl font-black text-white tracking-tight uppercase">Dashboard
+                </h1>
                 <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
                   <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span> Live CGDC picnic server
                 </p>
               </div>
             </div>
+            {/* <div className="flex items-center gap-3">
+              <Button variant="danger" size="sm" className="items-center gap-2 rounded-xl px-6 py-4 font-bold" onClick={() => { setIsAdmin(false); navigate('/'); }}>
+                <LogOut size={18} /> Log Out
+              </Button>
+            </div> */}
+
+
             <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={fetching}
+                onClick={triggerRefresh} // Calls the function manually
+                className="items-center gap-2 rounded-xl px-4 py-4 font-bold bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 transition-all"
+              >
+                <RotateCw size={18} className={fetching ? "animate-spin text-blue-500" : ""} />
+                <span >Refresh Data</span>
+              </Button>
+
               <Button variant="danger" size="sm" className="items-center gap-2 rounded-xl px-6 py-4 font-bold" onClick={() => { setIsAdmin(false); navigate('/'); }}>
                 <LogOut size={18} /> Log Out
               </Button>
             </div>
+
           </header>
+
+          {/* Dashboard Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Revenue Card */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-10">
+                <div className="w-20 h-20 bg-emerald-500 rounded-full blur-3xl"></div>
+              </div>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Total Accumulated Revenue</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-white tracking-tighter">₦{(stats.revenue ?? 0).toLocaleString()}</span>
+                <span className="text-emerald-500 text-[10px] font-bold uppercase">NGN</span>
+              </div>
+            </div>
+
+            {/* Progress Card */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+              <div className="flex justify-between items-end mb-2">
+                <div>
+                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Check-in Progress</p>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter">
+                    {stats.checkedInCount} <span className="text-slate-600 text-sm">/ {stats.total} Guests Registered</span>
+                  </h3>
+                </div>
+                <span className="text-blue-500 font-black text-xl tracking-tighter">{stats.checkInPercentage}%</span>
+              </div>
+
+              {/* The Progress Bar */}
+              <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                  style={{ width: `${stats.checkInPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
 
           {selectedParticipant ? (
             <div className="animate-in fade-in duration-500">
@@ -691,6 +817,7 @@ const App: React.FC = () => {
                   <ParticipantList
                     participants={participants}
                     onView={setSelectedParticipant}
+                    isLoading={fetching}
                     onDelete={(id) => {
                       const p = participants.find(x => x.id === id);
                       const name = p ? (p.lastName || p.firstName ? `${p.lastName} ${p.firstName}` : ((p as any).fullName || 'Legacy Guest')) : 'Unknown';

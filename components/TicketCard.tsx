@@ -3,9 +3,10 @@ import React, { useRef, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react'; // QRCodeSVG,
 import { Participant, TicketType } from '../types';
 import { Button } from './ui/Button';
-import { Download, CheckCircle2, MapPin, Calendar, Clock, ReceiptText, Copy, Check } from 'lucide-react';
+import { Download, CheckCircle2, MapPin, Calendar, Clock, ReceiptText, Copy, Check, Share2, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { Toaster, toast } from 'sonner';
 
 interface TicketCardProps {
   participant: Participant;
@@ -15,6 +16,8 @@ interface TicketCardProps {
 export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) => {
   const ticketRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const currentUrl = window.location.href.split('#')[0];
   const verificationUrl = `${currentUrl}#/verify/${participant.id}`;
@@ -29,21 +32,73 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
   };
 
   const downloadPDF = async () => {
-    if (!ticketRef.current) return;
+    if (!ticketRef.current || isDownloading) return;
 
-    const canvas = await html2canvas(ticketRef.current, {
-      backgroundColor: '#0f172a',
-      scale: 2,
-    });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'px',
-      format: [canvas.width / 2, canvas.height / 2]
-    });
+    setIsDownloading(true); // Start loader
+    try {
+      const canvas = await html2canvas(ticketRef.current, {
+        backgroundColor: '#0f172a',
+        scale: 2,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width / 2, canvas.height / 2]
+      });
 
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
-    pdf.save(`swiftpass-${shortId}.pdf`);
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save(`swiftpass-${shortId}.pdf`);
+    } catch (e) {
+      toast.error(`Failed to generate PDF ${e}`);
+    } finally {
+      setIsDownloading(false); // Stop loader
+    }
+  };
+
+  const sharePDF = async () => {
+    if (!ticketRef.current || isSharing) return;
+
+    setIsSharing(true); // Start loader
+
+    try {
+      // 1. Same logic as your download
+      const canvas = await html2canvas(ticketRef.current, {
+        backgroundColor: '#0f172a',
+        scale: 2,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width / 2, canvas.height / 2]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+
+      // 2. Convert PDF to a Blob instead of downloading
+      const pdfBlob = pdf.output('blob');
+      const fileName = `swiftpass-${shortId}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+      // 3. Trigger Native Share
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'SwiftPass Ticket',
+          text: `Here is the ticket for ${participant.firstName} ${participant.lastName}`,
+        });
+      } else {
+        // Fallback if browser doesn't support file sharing (e.g. some Desktop browsers)
+        // pdf.save(fileName);
+        toast.info("Sharing not supported on this browser. File downloaded instead.");
+      }
+    } catch (error) {
+      console.error("Error sharing PDF:", error);
+      toast.error("Could not open share menu.");
+    } finally {
+      setIsSharing(false); // Stop loader
+    }
   };
 
   return (
@@ -111,7 +166,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
           <p className="text-[8px] font-bold text-white/70 uppercase tracking-[0.3em]">ADDRESS : ALAUSA, SECRETARIATE IKEJA,LAGOS.</p>
           <div className="bg-black/10 p-4 flex justify-center items-center gap-2 border-t border-white/5">
             <MapPin size={14} className="text-yellow-400" />
-            <span className="text-[8px] font-bold text-yellow-400 uppercase tracking-[0.3em]">Venue: JOHNSON  JAKANDE TINUBU PARK</span>
+            <span className="text-[6px] font-bold text-yellow-400 uppercase tracking-[0.3em]">Venue: JOHNSON  JAKANDE TINUBU PARK</span>
           </div>
         </div>
 
@@ -152,26 +207,52 @@ export const TicketCard: React.FC<TicketCardProps> = ({ participant, onExit }) =
 
         <div className="bg-black/30 p-6 flex justify-center items-center gap-2 border-t border-white/5">
           <MapPin size={14} className="text-white/40" />
-          <span className="text-[8px] font-bold text-white/50 uppercase tracking-[0.3em]">JOHNSON JAKANDE TINUBU PARK • Lagos</span>
+          <span className="text-[7px] font-bold text-white/50 uppercase tracking-[0.3em]">JOHNSON JAKANDE TINUBU PARK • Lagos</span>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full">
         <Button
           variant="primary"
-          className="flex-1 gap-2 py-4 font-bold text-base shadow-xl"
+          className="flex-1 gap-2 py-4 font-bold text-base shadow-xl disabled:opacity-70"
           onClick={downloadPDF}
+          disabled={isDownloading || isSharing}
         >
-          <Download size={20} />
-          Download PDf
+          {/* <Download size={20} />
+          Download PDf */}
+
+          {isDownloading ? (
+            <Loader2 className="animate-spin" size={20} />
+          ) : (
+            <Download size={20} />
+          )}
+          {isDownloading ? "Generating..." : "Download PDF"}
+
         </Button>
+
         <Button
+          variant="primary"
+          className="flex-1 gap-2 py-4 font-bold text-base bg-emerald-600 hover:bg-emerald-700 shadow-xl border-none disabled:opacity-70"
+          onClick={sharePDF}
+          disabled={isDownloading || isSharing}
+        >
+          {/* <Share2 size={20} />
+          Share Ticket */}
+          {isSharing ? (
+            <Loader2 className="animate-spin" size={20} />
+          ) : (
+            <Share2 size={20} />
+          )}
+          {isSharing ? "Preparing..." : "Share Ticket"}
+        </Button>
+
+        {/* <Button
           variant="outline"
           className="flex-1 py-4 font-bold text-base border-slate-700 text-slate-300"
           onClick={onExit}
         >
           Return to Hub
-        </Button>
+        </Button> */}
       </div>
     </div>
   );
